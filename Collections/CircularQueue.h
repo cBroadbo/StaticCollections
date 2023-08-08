@@ -24,6 +24,7 @@ public:
     }
     virtual ~CircularQueue() = default;
 
+    void clear() override { mTail = 0; mHead = 0; }
     bool push(const T& item) override;
     bool pop(T& item) override;
     bool popElements(size_t count) override;

@@ -11,6 +11,14 @@ TEST_CASE( "CircularQueue is created", "[CircularQueue][Collections]" ) {
     REQUIRE_FALSE(queue.full());
 }
 
+TEST_CASE( "CircularQueue is cleared", "[CircularQueue][Collections]" ) {
+    CircularQueue<int, 4> queue = { 6, 7, 8, 9 };
+    REQUIRE(!queue.empty());
+    REQUIRE(queue.size() == 4);
+    queue.clear();
+    REQUIRE(queue.empty());
+}
+
 TEST_CASE("CircularQueue Initializer List", "[CircularQueue][Collections]" ) {
 
     //Initializer list
