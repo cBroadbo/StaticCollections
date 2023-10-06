@@ -13,7 +13,7 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
-add_executable(StaticCollectionsTests
+add_executable(StaticCollectionsTests EXCLUDE_FROM_ALL
         CollectionsTests/CircularQueueTests.cpp
         CollectionsTests/StaticVectorTests.cpp
         CollectionsTests/VectorTests.cpp
