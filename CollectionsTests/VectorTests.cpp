@@ -3,11 +3,12 @@
 //
 
 #include "../Collections/Vector.h"
-#include "catch2/catch_all.hpp"
+#include "doctest.h"
 
 #include <cstring>
+#include <numeric>
 
-TEST_CASE("Vector Construction", "[Vector][Collections]" ) {
+TEST_CASE("Vector Construction") {
 
     //Invalid args to constructor
     {
@@ -24,7 +25,7 @@ TEST_CASE("Vector Construction", "[Vector][Collections]" ) {
     }
 }
 
-TEST_CASE("Vector push back", "[Vector][Collection]" ) {
+TEST_CASE("Vector push back") {
     int data[4];
     Vector<int> v{data, std::size(data)};
 
@@ -37,11 +38,11 @@ TEST_CASE("Vector push back", "[Vector][Collection]" ) {
     REQUIRE(memcmp(expected, v.data(), sizeof(expected)) == 0);
 }
 
-TEST_CASE("Vector accessors", "[Vector][Collection][Accessors]" ) {
+TEST_CASE("Vector accessors") {
     int data[4];
     Vector<int> v{data, std::size(data)};
-    REQUIRE_THROWS_AS(v.front() == 0, std::range_error);
-    REQUIRE_THROWS_AS(v.back() == 0, std::range_error);
+    REQUIRE_THROWS_AS((void)(v.front() == 0), std::range_error);
+    REQUIRE_THROWS_AS((void)(v.back() == 0), std::range_error);
 
     v.push_back(4);
     REQUIRE(v.front() == 4);
@@ -62,7 +63,7 @@ TEST_CASE("Vector accessors", "[Vector][Collection][Accessors]" ) {
     REQUIRE_THROWS_AS(v[5], std::out_of_range);
 }
 
-TEST_CASE("Vector iterators", "[Vector][Collection][Accessors]" ) {
+TEST_CASE("Vector iterators") {
     int data[4];
     Vector<int> v{data, std::size(data)};
     v.push_back(1);
