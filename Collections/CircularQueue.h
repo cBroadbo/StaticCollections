@@ -26,6 +26,7 @@ public:
 
     void clear() override { mTail = 0; mHead = 0; }
     bool push(const T& item) override;
+    bool push(const T* items, size_t count) override;
     bool pop(T& item) override;
     bool popElements(size_t count) override;
     bool peek(T& item) override;
@@ -85,6 +86,19 @@ bool CircularQueue<T, Size>::push(const T& item) {
         return true;
     }
     return false;  // full queue
+}
+
+template<typename T, size_t SIZE>
+bool CircularQueue<T, SIZE>::push(const T *items, size_t count) {
+    if(!items) {
+        return false;
+    }
+    while(count--) {
+        if(!push(*items++)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 // Pop by Consumer can only update the head

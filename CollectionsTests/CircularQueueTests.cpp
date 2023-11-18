@@ -90,6 +90,17 @@ TEST_CASE( "CircularQueue single pushes and pops") {
     REQUIRE(value == 4);
 }
 
+TEST_CASE( "CircularQueue bulk push") {
+    CircularQueue<int, 4> queue;
+    REQUIRE_FALSE(queue.push(nullptr, 10));
+    const int items0[] = { 1, 2, 3, 4 };
+    REQUIRE(queue.push(items0, std::size(items0)));
+    REQUIRE(queue.full());
+    const int items1[] = { 1, 2, 3, 4, 5, 6 };
+    REQUIRE_FALSE(queue.push(items1, std::size(items1)));
+    REQUIRE(queue.full());
+}
+
 TEST_CASE( "CircularQueue bulk pop") {
     {
         CircularQueue<int, 4> queue = { 4, 3, 2, 1};
