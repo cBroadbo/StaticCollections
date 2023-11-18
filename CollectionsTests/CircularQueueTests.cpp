@@ -1,8 +1,9 @@
 #include "../Collections/CircularQueue.h"
 
-#include "catch2/catch_all.hpp"
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "doctest.h"
 
-TEST_CASE( "CircularQueue is created", "[CircularQueue][Collections]" ) {
+TEST_CASE( "CircularQueue is created" ) {
     CircularQueue<int, 4> queue;
     REQUIRE(queue.empty());
     REQUIRE(queue.capacity() == 4);
@@ -11,7 +12,7 @@ TEST_CASE( "CircularQueue is created", "[CircularQueue][Collections]" ) {
     REQUIRE_FALSE(queue.full());
 }
 
-TEST_CASE( "CircularQueue is cleared", "[CircularQueue][Collections]" ) {
+TEST_CASE( "CircularQueue is cleared") {
     CircularQueue<int, 4> queue = { 6, 7, 8, 9 };
     REQUIRE(!queue.empty());
     REQUIRE(queue.size() == 4);
@@ -19,7 +20,7 @@ TEST_CASE( "CircularQueue is cleared", "[CircularQueue][Collections]" ) {
     REQUIRE(queue.empty());
 }
 
-TEST_CASE("CircularQueue Initializer List", "[CircularQueue][Collections]" ) {
+TEST_CASE("CircularQueue Initializer List") {
 
     //Initializer list
     {
@@ -47,7 +48,7 @@ TEST_CASE("CircularQueue Initializer List", "[CircularQueue][Collections]" ) {
         }
     }
 }
-TEST_CASE( "CircularQueue single pushes and pops", "[CircularQueue][Collections]" ) {
+TEST_CASE( "CircularQueue single pushes and pops") {
     CircularQueue<int, 4> queue;
     REQUIRE(queue.push(1));
     REQUIRE(queue.size() == 1);
@@ -89,7 +90,7 @@ TEST_CASE( "CircularQueue single pushes and pops", "[CircularQueue][Collections]
     REQUIRE(value == 4);
 }
 
-TEST_CASE( "CircularQueue bulk pop", "[CircularQueue][Collections]" ) {
+TEST_CASE( "CircularQueue bulk pop") {
     {
         CircularQueue<int, 4> queue = { 4, 3, 2, 1};
         REQUIRE(queue.popElements(2));
@@ -100,7 +101,7 @@ TEST_CASE( "CircularQueue bulk pop", "[CircularQueue][Collections]" ) {
     CircularQueue<int, 4> queue = { 4, 3, 2, 1};
 }
 
-TEST_CASE( "CircularQueue block test", "[CircularQueue][Collections]" ) {
+TEST_CASE( "CircularQueue block test") {
 
     CircularQueue<int, 4> queue = { 4, 3, 2, 1};
     REQUIRE(queue.getBlock().size() == 4);

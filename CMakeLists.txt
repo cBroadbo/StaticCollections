@@ -6,20 +6,21 @@ set(CMAKE_CXX_STANDARD 23)
 Include(FetchContent)
 
 FetchContent_Declare(
-        Catch2
-        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG        v3.0.1 # or a later release
+        doctest
+        GIT_REPOSITORY https://github.com/doctest/doctest.git
+        GIT_TAG        v2.4.11 # or a later release
 )
 
-FetchContent_MakeAvailable(Catch2)
+FetchContent_MakeAvailable(doctest)
 
-add_executable(StaticCollectionsTests
+add_executable(StaticCollectionsTests EXCLUDE_FROM_ALL
         CollectionsTests/CircularQueueTests.cpp
         CollectionsTests/StaticVectorTests.cpp
         CollectionsTests/VectorTests.cpp
         )
-
-target_link_libraries(StaticCollectionsTests PRIVATE Catch2::Catch2WithMain)
+target_include_directories(StaticCollectionsTests PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR}/_deps/doctest-src/doctest
+        )
 
 add_library(StaticCollections INTERFACE
         Collections/CircularQueue.h

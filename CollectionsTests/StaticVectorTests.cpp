@@ -3,7 +3,7 @@
 //
 
 #include "../Collections/StaticVector.h"
-#include "catch2/catch_all.hpp"
+#include "doctest.h"
 
 #include <cstring>
 
@@ -11,7 +11,7 @@
 // Snitch test cases:
 //----------------------------------------------------------------------------
 
-TEST_CASE("StaticVector Construction", "[StaticVector][Collection]" ) {
+TEST_CASE("StaticVector Construction") {
 
     //Simple default constructor
     {
