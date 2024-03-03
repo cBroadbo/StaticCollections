@@ -12,6 +12,7 @@ class Queue {
 public:
     virtual void clear() = 0;
     virtual bool push(const T& item) = 0;
+    virtual bool push(const T* items, size_t count) = 0;
     virtual bool pop(T& item) = 0;
     virtual bool popElements(size_t count) = 0;
     virtual bool peek(T& item) = 0;

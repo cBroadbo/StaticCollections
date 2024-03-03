@@ -57,6 +57,8 @@ public:
     [[nodiscard]] bool full() const { return mCount == mCapacity; }
 
     void clear() { mCount = 0; }
+    T& front() { if(empty()) { throw std::range_error("front() called on empty vector"); } return mDataPtr[0]; }
+    T& back() { if(empty()) { throw std::range_error("back() called on empty vector"); } return mDataPtr[mCount-1]; }
     const T& front() const { if(empty()) { throw std::range_error("front() called on empty vector"); } return mDataPtr[0]; }
     const T& back() const { if(empty()) { throw std::range_error("back() called on empty vector"); } return mDataPtr[mCount-1]; }
 
