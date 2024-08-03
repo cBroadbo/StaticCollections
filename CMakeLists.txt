@@ -17,6 +17,7 @@ add_executable(StaticCollectionsTests EXCLUDE_FROM_ALL
         CollectionsTests/CircularQueueTests.cpp
         CollectionsTests/StaticVectorTests.cpp
         CollectionsTests/VectorTests.cpp
+        CollectionsTests/LinkedListTests.cpp
         )
 target_include_directories(StaticCollectionsTests PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}/_deps/doctest-src/doctest
@@ -27,4 +28,5 @@ add_library(StaticCollections INTERFACE
         Collections/Queue.h
         Collections/StaticVector.h
         Collections/Vector.h
+        Collections/LinkedList.h
         )
