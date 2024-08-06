@@ -157,7 +157,7 @@ public:
         }
     };
 
-    LinkedList<T> &operator=(const List<T> &other) {
+    virtual LinkedList<T> &operator=(const LinkedList<T> &other) {
         //make sure to release all the held node back to the allocator.
         clear();
         
