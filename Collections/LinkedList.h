@@ -6,21 +6,9 @@
 
 #include "List.h"
 
-class LinkedListAllocator {
-public:
-    virtual void *alloc(size_t size) = 0;
-    virtual void free(void *ptr) = 0;
-
-    /**
-     * Total bytes remaining in the allocator
-     * @return 
-     */
-    [[nodiscard]] virtual size_t size() const = 0;
-};
-
 template <class T>
 class LinkedList: public List<T> { //: public List<T> {
-private:
+public:
     struct Node {
         T mElement = {};
         Node *mNext = nullptr;
@@ -61,7 +49,18 @@ private:
         }
     };
 
-public:
+    class Allocator {
+    public:
+        virtual Node *alloc() = 0;
+        virtual void free(Node *ptr) = 0;
+
+        /**
+         * Total bytes remaining in the allocator
+         * @return
+         */
+        [[nodiscard]] virtual size_t size() const = 0;
+    };
+
     class const_iterator {
     public:
         friend LinkedList<T>;
@@ -126,41 +125,10 @@ public:
         Node *mNode = nullptr;
     };
 
-private:
-    Node mEnd;
-    Node* mHead = &mEnd;
-    Node* mTail = &mEnd;
-    LinkedListAllocator &mAllocator;
-    size_t mNumElements = 0;
-
-    void eraseNode(Node *node) {
-
-        if(node == mHead) {
-            mHead = mHead->mNext;
-            if(mHead) {
-                mHead->mPrev = nullptr;
-            } else {
-                //mHead is null, so make tail null too
-                mTail = nullptr;
-            }
-            mAllocator.free(node);
-            mNumElements--;
-        } else if(node == mTail) {
-            mTail = mTail->mPrev;
-            mTail->mNext = nullptr;
-            mAllocator.free(node);
-            mNumElements--;
-        } else {
-            node->mPrev->mNext = node->mNext;
-            node->mNext->mPrev = node->mPrev;
-            mAllocator.free(node);
-            mNumElements--;
-        }
-    }
 
 public:
     // Default constructor
-    explicit LinkedList(LinkedListAllocator &allocator): mAllocator(allocator) {
+    explicit LinkedList(Allocator &allocator): mAllocator(allocator) {
     }
 
     //Copy constructor
@@ -173,14 +141,14 @@ public:
         }
     }
 
-    LinkedList(LinkedListAllocator &allocator, const std::initializer_list<T> &initializerList):
+    LinkedList(Allocator &allocator, const std::initializer_list<T> &initializerList):
         mAllocator(allocator) { // NOLINT
         for(const T* elem = initializerList.begin(); elem != initializerList.end(); elem++) {
             push_back(*elem);
         }
     }
 
-    LinkedList(LinkedListAllocator &allocator, const LinkedList<T> &other):
+    LinkedList(Allocator &allocator, const LinkedList<T> &other):
         mAllocator(allocator) {
 
         //copy the elements
@@ -205,9 +173,8 @@ public:
     [[nodiscard]] size_t size() const override { return mNumElements; }
 
     void push_back(const T &elem) override {
-
         // Create the new Node.
-        auto newNode = (Node*)mAllocator.alloc(sizeof(Node));
+        auto newNode = mAllocator.alloc();
 
         if(!newNode) {
             throw std::overflow_error("Unable to allocate new element.");
@@ -243,9 +210,8 @@ public:
     }
 
     void push_front(const T &elem) override {
-
         // Create the new Node.
-        auto newNode = (Node*)mAllocator.alloc(sizeof(Node));
+        auto newNode = mAllocator.alloc();
 
         if(!newNode) {
             throw std::overflow_error("Unable to allocate new element.");
@@ -311,7 +277,6 @@ public:
     }
 
     void erase(const T &elem) override {
-
         if(empty()) {
             return;
         }
@@ -325,11 +290,9 @@ public:
     }
 
     void eraseAtIndex(std::size_t index) override {
-
         if(empty()) {
             return;
         }
-
         std::size_t i(0);
         for(Node *node = mHead; node != &mEnd; node = node->mNext, i++) {
             if(i == index) {
@@ -363,6 +326,38 @@ public:
         }
         return true;
     }
+
+private:
+    void eraseNode(Node *node) {
+        if(node == mHead) {
+            mHead = mHead->mNext;
+            if(mHead) {
+                mHead->mPrev = nullptr;
+            } else {
+                //mHead is null, so make tail null too
+                mTail = nullptr;
+            }
+            mAllocator.free(node);
+            mNumElements--;
+        } else if(node == mTail) {
+            mTail = mTail->mPrev;
+            mTail->mNext = nullptr;
+            mAllocator.free(node);
+            mNumElements--;
+        } else {
+            node->mPrev->mNext = node->mNext;
+            node->mNext->mPrev = node->mPrev;
+            mAllocator.free(node);
+            mNumElements--;
+        }
+    }
+
+private:
+    Node mEnd;
+    Node* mHead = &mEnd;
+    Node* mTail = &mEnd;
+    Allocator &mAllocator;
+    size_t mNumElements = 0;
 };
 
 #endif //LINKEDLIST_H

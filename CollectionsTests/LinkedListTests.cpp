@@ -14,20 +14,22 @@ namespace {
         bool operator==(const Tag &rhs) const { return std::strcmp(mTag, rhs.mTag); }
     };
 
-    template<size_t MAX_ALLOCATIONS>
-    class Allocator: public LinkedListAllocator {
+    template<class T, size_t MAX_ALLOCATIONS>
+    class Allocator: public LinkedList<T>::Allocator {
     public:
-        void *alloc(size_t size) override {
+        typename LinkedList<T>::Node *alloc() override {
             if(mNumAllocations < MAX_ALLOCATIONS) {
-                mNumAllocations++;
-                auto ptr = ::malloc(size);
+                auto ptr = new typename LinkedList<T>::Node;
+                if(ptr) {
+                    mNumAllocations++;
+                }
                 return ptr;
             }
             return nullptr;
         }
 
-        void free(void *ptr) override {
-            ::free(ptr);
+        void free(typename LinkedList<T>::Node *ptr) override {
+            delete ptr;
             mNumAllocations--;
         }
 
@@ -44,7 +46,7 @@ namespace {
 TEST_CASE("TestLinkedList_copyConstructorOfIdenticalType") {
 
     const std::size_t MAX_TAGS = 8;
-    Allocator<MAX_TAGS> allocator;
+    Allocator<Tag, MAX_TAGS> allocator;
 
     //When copying a list of the same EXACT type (same template args), a specific version of
     //the copy constructor is called.  So we need to test that exact one.
@@ -62,13 +64,13 @@ TEST_CASE("TestLinkedList_copyConstructorOfIdenticalType") {
 TEST_CASE("TestLinkedList_copyConstructorOfSameElementTypeDifferentSize") {
 
     const std::size_t MAX_TAGS = 4;
-    Allocator<MAX_TAGS> allocator0;
+    Allocator<Tag, MAX_TAGS> allocator0;
 
     LinkedList<Tag> tagList = {allocator0, { Tag("one"), Tag("two"), Tag("three"), Tag("four") }};
 
     //Copy to a destination that has more capacity.
     {
-        Allocator<MAX_TAGS+1> allocator1;
+        Allocator<Tag, MAX_TAGS+1> allocator1;
         LinkedList<Tag> tagListCopy(allocator1, tagList);
 
         auto origIt{tagList.begin()};
@@ -80,14 +82,14 @@ TEST_CASE("TestLinkedList_copyConstructorOfSameElementTypeDifferentSize") {
 
     //Copy to a destination that has less capacity.  Should result in an exception
     {
-        Allocator<MAX_TAGS-1> allocator1;
+        Allocator<Tag, MAX_TAGS-1> allocator1;
         typedef LinkedList<Tag> ListType;
         REQUIRE_THROWS_AS({ListType list(allocator1, tagList); (void) list; }, std::overflow_error);
     }
 }
 
 TEST_CASE("TestLinkedList_empty") {
-    Allocator<3> allocator;
+    Allocator<int, 3> allocator;
     LinkedList<int> list(allocator);
     REQUIRE(list.empty());
     list.push_back(123);
@@ -101,7 +103,7 @@ TEST_CASE("TestLinkedList_empty") {
 }
 
 TEST_CASE("LinkedList Size") {
-    Allocator<4> allocator;
+    Allocator<int, 4> allocator;
     LinkedList<int> list(allocator);
     REQUIRE(list.size() == (std::size_t)0U);
     list.push_back(123);
@@ -116,7 +118,7 @@ TEST_CASE("LinkedList Size") {
 
 TEST_CASE("TestLinkedList_push_back") {
 
-    Allocator<3> allocator;
+    Allocator<int, 3> allocator;
     LinkedList<int> list(allocator);
     REQUIRE(list.size() == list.size());
     list.push_back(123);
@@ -130,7 +132,7 @@ TEST_CASE("TestLinkedList_push_back") {
 
 TEST_CASE("TestLinkedList_pop_back") {
 
-    Allocator<3> allocator;
+    Allocator<int, 3> allocator;
     LinkedList<int> list(allocator);
     list.pop_back();
     REQUIRE(list.size() == list.size());
@@ -152,7 +154,7 @@ TEST_CASE("TestLinkedList_pop_back") {
 
 TEST_CASE("TestLinkedList_push_front") {
 
-    Allocator<3> allocator;
+    Allocator<int, 3> allocator;
     LinkedList<int> list(allocator);
     REQUIRE(list.size() == list.size());
     list.push_front(123);
@@ -166,7 +168,7 @@ TEST_CASE("TestLinkedList_push_front") {
 
 TEST_CASE("TestLinkedList_pop_front") {
 
-    Allocator<3> allocator;
+    Allocator<int, 3> allocator;
     LinkedList<int> list(allocator);
     list.push_front(123);
     REQUIRE(list.size() == list.size());
@@ -186,7 +188,7 @@ TEST_CASE("TestLinkedList_pop_front") {
 
 TEST_CASE("TestLinkedList_back") {
 
-    Allocator<3> allocator;
+    Allocator<int, 3> allocator;
     LinkedList<int> list(allocator);
     list.push_back(123);
     REQUIRE(list.back() == list.back());
@@ -209,7 +211,7 @@ TEST_CASE("TestLinkedList_back") {
 
 TEST_CASE("TestLinkedList_front") {
 
-    Allocator<3> allocator;
+    Allocator<int, 3> allocator;
     LinkedList<int> list(allocator);
     list.push_front(123);
     REQUIRE(list.front() == list.front());
@@ -232,7 +234,7 @@ TEST_CASE("TestLinkedList_front") {
 
 TEST_CASE("TestLinkedList_erase") {
 
-    Allocator<3> allocator;
+    Allocator<int, 3> allocator;
     LinkedList<int> list(allocator);
 
     //Do this twice to exercise the node assignment
@@ -263,7 +265,7 @@ TEST_CASE("TestLinkedList_erase") {
 TEST_CASE("TestLinkedList_eraseAtIndex") {
 
     const std::size_t LIST_SIZE = 5;
-    Allocator<LIST_SIZE> allocator;
+    Allocator<int, LIST_SIZE> allocator;
     LinkedList<int> list(allocator, {99, 7, 88, 5, 77});
 
     //remove the middle element leaving 4 elements
@@ -301,7 +303,7 @@ TEST_CASE("TestLinkedList_eraseAtIndex") {
 }
 
 TEST_CASE("TestLinkedList_iterator") {
-    Allocator<3> allocator;
+    Allocator<int, 3> allocator;
     LinkedList<int> list0(allocator);
     list0.push_back(1);
     list0.push_back(2);
@@ -331,7 +333,7 @@ TEST_CASE("TestLinkedList_iterator") {
 
 TEST_CASE("TestLinkedList_copyAlgorithm") {
     int myInts[] = { 1, 2, 3, 4, 5 };
-    Allocator<10> allocator;
+    Allocator<int, 10> allocator;
     LinkedList<int> list0(allocator);
     std::copy(myInts, myInts + std::size(myInts), std::back_inserter(list0));
 
@@ -344,7 +346,7 @@ TEST_CASE("TestLinkedList_copyAlgorithm") {
 
 TEST_CASE("TestLinkedList_literalConstructor") {
     const std::size_t LIST_SIZE = 5;
-    Allocator<LIST_SIZE> allocator;
+    Allocator<int, LIST_SIZE> allocator;
     LinkedList<int> list0 = {allocator, { 1, 2, 3, 4, 5 }};
 
     int resultInts[LIST_SIZE];
@@ -357,7 +359,7 @@ TEST_CASE("TestLinkedList_literalConstructor") {
 
 TEST_CASE("TestLinkedList_eraseWithIterator") {
     const std::size_t LIST_SIZE = 10;
-    Allocator<LIST_SIZE * 2> allocator;
+    Allocator<int, LIST_SIZE * 2> allocator;
     LinkedList<int> list0 = { allocator, { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }};
 
     for(auto it{list0.begin()}; it != list0.end(); ) {
@@ -374,7 +376,7 @@ TEST_CASE("TestLinkedList_eraseWithIterator") {
 
 TEST_CASE("TestLinkedList_mutableListWithIterator") {
     const std::size_t LIST_SIZE = 10;
-    Allocator<LIST_SIZE * 2> allocator;
+    Allocator<int, LIST_SIZE * 2> allocator;
     LinkedList<int> list0 = { allocator, { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }};
 
     for (int &it : list0) {
@@ -388,7 +390,7 @@ TEST_CASE("TestLinkedList_mutableListWithIterator") {
 TEST_CASE("TestLinkedList_frontAndBackMutability") {
 
     const std::size_t LIST_SIZE = 10;
-    Allocator<LIST_SIZE * 2> allocator;
+    Allocator<int, LIST_SIZE * 2> allocator;
     LinkedList<int> list0 = { allocator, { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }};
 
     list0.front() = 99;
