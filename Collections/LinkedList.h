@@ -6,21 +6,16 @@
 
 #include "List.h"
 
-template <class T, std::size_t SIZE>
-
-class LinkedList: public List<T> {
-
+template <class T>
+class LinkedList: public List<T> { //: public List<T> {
 public:
-    typedef T value_type;
-
-private:
     struct Node {
-        T *mElement{nullptr};
-        Node *mNext{nullptr};
-        Node *mPrev{nullptr};
+        T mElement = {};
+        Node *mNext = nullptr;
+        Node *mPrev = nullptr;
 
         Node() = default;
-        explicit Node(T *ptr): mElement(ptr) {}
+        explicit Node(const T &data): mElement(data) {}
 
         void insertBefore(Node *nodeToBeInserted) {
             nodeToBeInserted->mPrev = mPrev;
@@ -54,151 +49,147 @@ private:
         }
     };
 
-private:
-    class PrivIterator: public List<T>::iteratorBase
-    {
+    class Allocator {
     public:
+        virtual Node *alloc() = 0;
+        virtual void free(Node *ptr) = 0;
+
+        /**
+         * Total bytes remaining in the allocator
+         * @return
+         */
+        [[nodiscard]] virtual size_t size() const = 0;
+    };
+
+    class const_iterator {
+    public:
+        friend LinkedList<T>;
         typedef T& reference;
         typedef T* pointer;
-        Node *mNode;
 
-        explicit PrivIterator(Node *node) : mNode(node) { }
-        void next() {
+        explicit const_iterator(const Node *node) : mNode(node) {}
+
+        const_iterator& operator++() {
             if(mNode) {
                 mNode = mNode->mNext;
             }
+            return *this;
         }
-        reference operator*() { return *mNode->mElement; }
-        pointer operator->() { return mNode->mElement; }
-        bool operator==(const typename List<T>::iteratorBase& rhs) const { return mNode == ((PrivIterator &)rhs).mNode; }
-        bool operator!=(const typename List<T>::iteratorBase& rhs) const { return mNode != ((PrivIterator &)rhs).mNode; }
-    };
 
-    class PrivConstIterator: public List<T>::iteratorBase
-    {
-    public:
-        typedef T& reference;
-        typedef T* pointer;
-        const Node *mNode;
-
-        explicit PrivConstIterator(const Node *node) : mNode(node) { }
-        void next() {
+        const_iterator operator++(int) { // NOLINT(cert-dcl21-cpp)
             if(mNode) {
                 mNode = mNode->mNext;
             }
+            return *this;
         }
-        reference operator*() { return *mNode->mElement; }
-        pointer operator->() { return mNode->mElement; }
-        bool operator==(const typename List<T>::iteratorBase& rhs) const { return mNode == ((PrivConstIterator &)rhs).mNode; }
-        bool operator!=(const typename List<T>::iteratorBase& rhs) const { return mNode != ((PrivConstIterator &)rhs).mNode; }
+
+        const T &operator*() const { return mNode->mElement; }
+        const T *operator->() const { return &mNode->mElement; }
+        bool operator==(const const_iterator& rhs) const { return mNode == rhs.mNode; }
+        bool operator!=(const const_iterator& rhs) const { return !(*this == rhs); }
+
+    protected:
+        const Node *mNode = nullptr;
     };
 
-private:
-    Node mNodes[SIZE]{};
-    T mElements[SIZE]{};
-    T mEndElement{};
-    std::size_t mNumElements{0};
-    Node mEnd{&mEndElement};
-    Node *mHead{&mEnd};
-    Node *mAvailable{&mNodes[0]};
+    class iterator {
+    public:
+        friend LinkedList<T>;
+        typedef T& reference;
+        typedef T* pointer;
 
-private:
-    void initNodes() {
-        mNodes[0].mPrev = nullptr;
+        explicit iterator(Node *node): mNode(node) {}
 
-        //Now link all the nodes together.
-        for(unsigned int i = 0; i < std::size(mNodes)-1; i++) {
-            mNodes[i].mNext = &mNodes[i+1];
-            mNodes[i].mNext->mPrev = &mNodes[i];
-            mNodes[i].mElement = &mElements[i];
+        iterator& operator++() {
+            if(mNode) {
+                mNode = mNode->mNext;
+            }
+            return *this;
         }
-        mNodes[SIZE-1].mNext = nullptr;
-        mNodes[SIZE-1].mElement = &mElements[SIZE-1];
-        mNumElements = 0;
-        mHead = &mEnd;
-        mAvailable = &mNodes[0];
-        mEnd.mPrev = nullptr;
-    }
 
-private:
-    void eraseNode(Node *node) {
-        mNumElements--;
-        if(node == mHead) {
-            mHead = mHead->mNext;
+        iterator operator++(int) { // NOLINT(cert-dcl21-cpp)
+            if(mNode) {
+                mNode = mNode->mNext;
+            }
+            return *this;
         }
-        node->remove();
-        if(mAvailable) {
-            mAvailable->insertBefore(node);
-        }
-        mAvailable = node;
-    }
+
+        reference operator*() const { return mNode->mElement; }
+        pointer operator->() const { return &mNode->mElement; }
+        reference operator*() { return mNode->mElement; }
+        pointer operator->() { return &mNode->mElement; }
+        bool operator==(const iterator& rhs) const { return mNode == rhs.mNode; }
+        bool operator!=(const iterator& rhs) const { return mNode != rhs.mNode; }
+
+    protected:
+        Node *mNode = nullptr;
+    };
+
 
 public:
-    LinkedList() { // NOLINT
-        initNodes();
+    // Default constructor
+    explicit LinkedList(Allocator &allocator): mAllocator(allocator) {
     }
 
-    explicit LinkedList(const LinkedList<T, SIZE> &other) { // NOLINT
-        initNodes();
-        for(const T &elem: other) {
+    //Copy constructor
+    LinkedList(const LinkedList<T> &rhs):
+            mAllocator(rhs.mAllocator) {
+
+        //copy the elements
+        for(const T &elem: rhs) {
             push_back(elem);
         }
     }
 
-    explicit LinkedList(const List<T> &other) { // NOLINT
-        if(other.size() > max_size()) {
-            throw std::invalid_argument("Attempted to copy a larger list into a smaller one.");
-        }
-        initNodes();
-        for(const T &elem: other) {
-            push_back(elem);
-        }
-    }
-
-    LinkedList(const std::initializer_list<T> &initializerList) { // NOLINT
-        if(initializerList.size() > max_size()) {
-            throw std::invalid_argument("Attempted to initialize static linked list with too many literals.");
-        }
-        initNodes();
-
+    LinkedList(Allocator &allocator, const std::initializer_list<T> &initializerList):
+        mAllocator(allocator) { // NOLINT
         for(const T* elem = initializerList.begin(); elem != initializerList.end(); elem++) {
             push_back(*elem);
         }
     }
 
-    LinkedList<T, SIZE> &operator=(const List<T> &other) {
-        if(other.size() > max_size()) {
-            throw std::invalid_argument("Attempted to copy a larger list into a smaller one.");
+    LinkedList(Allocator &allocator, const LinkedList<T> &other):
+        mAllocator(allocator) {
+
+        //copy the elements
+        for(const T &elem: other) {
+            push_back(elem);
         }
-        initNodes();
+    };
+
+    virtual LinkedList<T> &operator=(const LinkedList<T> &other) {
+        //make sure to release all the held node back to the allocator.
+        clear();
+        
+        //now just copy the elements
         for(const T &elem: other) {
             push_back(elem);
         }
         return *this;
     };
-
+    
     [[nodiscard]] bool empty() const override { return mHead == &mEnd; }
-    [[nodiscard]] bool isFull() const override { return size() == max_size(); }
-    [[nodiscard]] std::size_t size() const override { return mNumElements; }
-    [[nodiscard]] std::size_t max_size() const override { return SIZE; }
+    [[nodiscard]] bool isFull() const override { return mAllocator.size() < sizeof(Node);}
+    [[nodiscard]] size_t size() const override { return mNumElements; }
 
     void push_back(const T &elem) override {
-        if(!mAvailable) {
-            throw std::overflow_error("Attempted to add element to full list.");
+        // Create the new Node.
+        auto newNode = mAllocator.alloc();
+
+        if(!newNode) {
+            throw std::bad_alloc();
         }
+        newNode->mNext = nullptr;
+        newNode->mPrev = nullptr;
+        newNode->mElement = elem;
 
-        //Set a new head pointer to the available list.
+        //Set a new mHead pointer to the available list.
         mNumElements++;
-        Node *node = mAvailable;
-        *node->mElement = elem;
-        mAvailable = mAvailable->mNext;
 
-        //Call remove node to set the links correctly.
-        node->remove();
-        mEnd.insertBefore(node);
+        mEnd.insertBefore(newNode);
         //was this the first element added?
         if(mHead == &mEnd) {
-            mHead = node;
+            mHead = newNode;
         }
     }
 
@@ -208,12 +199,9 @@ public:
             mNumElements--;
             Node *oldEnd = mEnd.mPrev;
 
-            //Put the current end node back in the available list;
+            //Release the current end node back to the allocator;
             oldEnd->remove();
-            if(mAvailable) {
-                mAvailable->insertBefore(oldEnd);
-            }
-            mAvailable = oldEnd;
+            mAllocator.free(oldEnd);
 
             if(mHead == oldEnd) {
                 mHead = &mEnd;
@@ -222,20 +210,21 @@ public:
     }
 
     void push_front(const T &elem) override {
-        if(!mAvailable) {
-            throw std::overflow_error("Attempted to add element to full list.");
+        // Create the new Node.
+        auto newNode = mAllocator.alloc();
+
+        if(!newNode) {
+            throw std::bad_alloc();
         }
+        newNode->mNext = nullptr;
+        newNode->mPrev = nullptr;
+        newNode->mElement = elem;
 
-        //Set a new head pointer to the available list.
+        //Set a new mHead pointer to the available list.
         mNumElements++;
-        Node *node = mAvailable;
-        *node->mElement = elem;
-        mAvailable = mAvailable->mNext;
 
-        //Call remove node to set the links correctly.
-        node->remove();
-        mHead->insertBefore(node);
-        mHead = node;
+        mHead->insertBefore(newNode);
+        mHead = newNode;
     }
 
     void pop_front() override {
@@ -244,56 +233,56 @@ public:
             mNumElements--;
             Node *newHead = mHead->mNext;
 
-            //Put the current end node back in the available list;
+            //Release the current head node back to the allocator;
             mHead->remove();
-            if(mAvailable) {
-                mAvailable->insertBefore(mHead);
-            }
-            mAvailable = mHead;
+            mAllocator.free(mHead);
+
+            //Make the new element the head
             mHead = newHead;
         }
     }
 
     void clear() override {
-        initNodes();
+        while(mHead != &mEnd) {
+            eraseAtIndex(0);
+        }
     }
 
     const T &front() const override {
         if(empty()) {
             throw std::underflow_error("List is empty");
         }
-        return *mHead->mElement;
+        return mHead->mElement;
     }
 
     const T &back() const override {
         if(empty()) {
             throw std::underflow_error("List is empty");
         }
-        return *mEnd.mPrev->mElement;
+        return mEnd.mPrev->mElement;
     }
 
     T &front() override {
         if(empty()) {
             throw std::underflow_error("List is empty");
         }
-        return *mHead->mElement;
+        return mHead->mElement;
     }
 
     T &back() override {
         if(empty()) {
             throw std::underflow_error("List is empty");
         }
-        return *mEnd.mPrev->mElement;
+        return mEnd.mPrev->mElement;
     }
 
     void erase(const T &elem) override {
-
         if(empty()) {
             return;
         }
 
         for(Node *node = mHead; node != &mEnd; node = node->mNext) {
-            if(*node->mElement == elem) {
+            if(node->mElement == elem) {
                 eraseNode(node);
                 return;
             }
@@ -301,11 +290,9 @@ public:
     }
 
     void eraseAtIndex(std::size_t index) override {
-
         if(empty()) {
             return;
         }
-
         std::size_t i(0);
         for(Node *node = mHead; node != &mEnd; node = node->mNext, i++) {
             if(i == index) {
@@ -315,34 +302,62 @@ public:
         }
     }
 
-    typename List<T>::iterator erase(typename List<T>::iterator &it) override {
-        auto ret{it};
+    iterator erase(iterator &it) {
+        iterator ret{it};
         ret++;
-        if(auto linkedListIt = dynamic_cast<PrivIterator*>(it.getImpl())) {
-            eraseNode(linkedListIt->mNode);
-        }
+        eraseNode(it.mNode);
         return ret;
     }
 
-    typename List<T>::iterator begin() override {
-        PrivIterator it(mHead);
-        return typename List<T>::iterator(it, sizeof(it));
+    iterator begin() { return iterator(mHead); }
+    iterator end() { return iterator(&mEnd); }
+    const_iterator begin() const { return const_iterator(mHead); }
+    const_iterator end() const { return const_iterator(&mEnd); }
+
+    bool operator==(const LinkedList<T> &rhs) const {
+        if (size() != rhs.size()) {
+            return false;
+        }
+        auto rhsIt = rhs.begin();
+        for (auto it{begin()}; it != end(); it++, rhsIt++) {
+            if (*it != *rhsIt) {
+                return false;
+            }
+        }
+        return true;
     }
 
-    typename List<T>::iterator end() override {
-        PrivIterator it(&mEnd);
-        return typename List<T>::iterator(it, sizeof(it));
+private:
+    void eraseNode(Node *node) {
+        if(node == mHead) {
+            mHead = mHead->mNext;
+            if(mHead) {
+                mHead->mPrev = nullptr;
+            } else {
+                //mHead is null, so make tail null too
+                mTail = nullptr;
+            }
+            mAllocator.free(node);
+            mNumElements--;
+        } else if(node == mTail) {
+            mTail = mTail->mPrev;
+            mTail->mNext = nullptr;
+            mAllocator.free(node);
+            mNumElements--;
+        } else {
+            node->mPrev->mNext = node->mNext;
+            node->mNext->mPrev = node->mPrev;
+            mAllocator.free(node);
+            mNumElements--;
+        }
     }
 
-    typename List<T>::const_iterator begin() const override {
-        PrivConstIterator it(mHead);
-        return typename List<T>::const_iterator(it, sizeof(it));
-    }
-
-    typename List<T>::const_iterator end() const override {
-        PrivConstIterator it(&mEnd);
-        return typename List<T>::const_iterator(it, sizeof(it));
-    }
+private:
+    Node mEnd;
+    Node* mHead = &mEnd;
+    Node* mTail = &mEnd;
+    Allocator &mAllocator;
+    size_t mNumElements = 0;
 };
 
 #endif //LINKEDLIST_H

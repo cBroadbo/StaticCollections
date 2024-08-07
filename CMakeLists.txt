@@ -38,6 +38,7 @@ if(${INCLUDE_EXAMPLES})
             CollectionsTests/StaticVectorTests.cpp
             CollectionsTests/VectorTests.cpp
             CollectionsTests/LinkedListTests.cpp
+            CollectionsTests/StaticLinkedListTests.cpp
             )
     target_include_directories(StaticCollectionsTests PRIVATE
             ${CMAKE_CURRENT_BINARY_DIR}/_deps/doctest-src/doctest
