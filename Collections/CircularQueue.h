@@ -1,5 +1,5 @@
-#ifndef CIRCULARQUEUE_H
-#define CIRCULARQUEUE_H
+#ifndef STATICCOLLECTIONS_CIRCULARQUEUE_H
+#define STATICCOLLECTIONS_CIRCULARQUEUE_H
 
 #include <iostream>
 #include <cstddef>
@@ -169,4 +169,4 @@ size_t CircularQueue<T, Size>::increment(size_t idx) const {
     return (idx + 1) % std::size(mArray);
 }
 
-#endif //CIRCULARQUEUE_H
+#endif //STATICCOLLECTIONS_CIRCULARQUEUE_H

@@ -1,5 +1,5 @@
-#ifndef LINKEDLIST_H
-#define LINKEDLIST_H
+#ifndef STATICCOLLECTIONS_LINKEDLIST_H
+#define STATICCOLLECTIONS_LINKEDLIST_H
 
 #include <iterator>
 #include <initializer_list>
@@ -360,4 +360,4 @@ private:
     size_t mNumElements = 0;
 };
 
-#endif //LINKEDLIST_H
+#endif //STATICCOLLECTIONS_LINKEDLIST_H

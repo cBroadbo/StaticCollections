@@ -2,8 +2,8 @@
 // Created by Craig Home on 7/31/23.
 //
 
-#ifndef STATICVECTOR_H
-#define STATICVECTOR_H
+#ifndef STATICCOLLECTIONS_STATICVECTOR_H
+#define STATICCOLLECTIONS_STATICVECTOR_H
 
 #include <stdexcept>
 #include <initializer_list>
@@ -29,4 +29,4 @@ public:
 };
 
 
-#endif //STATICVECTOR_H
+#endif //STATICCOLLECTIONS_STATICVECTOR_H
