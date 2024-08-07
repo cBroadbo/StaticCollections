@@ -1,5 +1,5 @@
-#ifndef LIST_H
-#define LIST_H
+#ifndef STATICCOLLECTIONS_LIST_H
+#define STATICCOLLECTIONS_LIST_H
 
 #include <array>
 #include <cstdlib>
@@ -28,4 +28,4 @@ public:
     virtual T &back() = 0;
 };
 
-#endif //LIST_H
+#endif //STATICCOLLECTIONS_LIST_H

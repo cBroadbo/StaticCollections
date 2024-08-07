@@ -43,7 +43,7 @@ namespace {
 
 }
 
-TEST_CASE("TestLinkedList_copyConstructorOfIdenticalType") {
+TEST_CASE("StaticLinkedList copyConstructorOfIdenticalType") {
 
     //When copying a list of the same EXACT type (same template args), a specific version of
     //the copy constructor is called.  So we need to test that exact one.
@@ -58,7 +58,7 @@ TEST_CASE("TestLinkedList_copyConstructorOfIdenticalType") {
     }
 }
 
-TEST_CASE("TestLinkedList_copyConstructorOfSameElementTypeDifferentSize") {
+TEST_CASE("StaticLinkedList copyConstructorOfSameElementTypeDifferentSize") {
 
     const std::size_t MAX_TAGS = 4;
     Allocator<Tag, MAX_TAGS> allocator0;
@@ -83,7 +83,7 @@ TEST_CASE("TestLinkedList_copyConstructorOfSameElementTypeDifferentSize") {
     }
 }
 
-TEST_CASE("TestLinkedList_empty") {
+TEST_CASE("StaticLinkedList empty") {
     StaticLinkedList<int, 3> list;
     REQUIRE(list.empty());
     list.push_back(123);
@@ -109,7 +109,7 @@ TEST_CASE("LinkedList Size") {
     REQUIRE(list.size() == (std::size_t)0U);
 }
 
-TEST_CASE("TestLinkedList_push_back") {
+TEST_CASE("StaticLinkedList push_back") {
 
     StaticLinkedList<int, 3> list;
     REQUIRE(list.size() == list.size());
@@ -122,7 +122,7 @@ TEST_CASE("TestLinkedList_push_back") {
     REQUIRE_THROWS_AS(list.push_back(456), std::bad_alloc);
 }
 
-TEST_CASE("TestLinkedList_pop_back") {
+TEST_CASE("StaticLinkedList pop_back") {
 
     StaticLinkedList<int, 3> list;
     list.pop_back();
@@ -143,7 +143,7 @@ TEST_CASE("TestLinkedList_pop_back") {
     REQUIRE(list.size() == list.size());
 }
 
-TEST_CASE("TestLinkedList_push_front") {
+TEST_CASE("StaticLinkedList push_front") {
 
     StaticLinkedList<int, 3> list;
     REQUIRE(list.size() == list.size());
@@ -156,7 +156,7 @@ TEST_CASE("TestLinkedList_push_front") {
     REQUIRE_THROWS_AS(list.push_front(456), std::bad_alloc);
 }
 
-TEST_CASE("TestLinkedList_pop_front") {
+TEST_CASE("StaticLinkedList pop_front") {
 
     StaticLinkedList<int, 3> list;
     list.push_front(123);
@@ -175,7 +175,7 @@ TEST_CASE("TestLinkedList_pop_front") {
     REQUIRE(list.size() == list.size());
 }
 
-TEST_CASE("TestLinkedList_back") {
+TEST_CASE("StaticLinkedList back") {
 
     StaticLinkedList<int, 3> list;
     list.push_back(123);
@@ -197,7 +197,7 @@ TEST_CASE("TestLinkedList_back") {
     REQUIRE_THROWS_AS(list.back(), std::underflow_error);
 }
 
-TEST_CASE("TestLinkedList_front") {
+TEST_CASE("StaticLinkedList front") {
 
     StaticLinkedList<int, 3> list;
     list.push_front(123);
@@ -219,7 +219,7 @@ TEST_CASE("TestLinkedList_front") {
     REQUIRE_THROWS_AS(list.front(), std::underflow_error);
 }
 
-TEST_CASE("TestLinkedList_erase") {
+TEST_CASE("StaticLinkedList erase") {
 
     StaticLinkedList<int, 3> list;
 
@@ -248,7 +248,7 @@ TEST_CASE("TestLinkedList_erase") {
 
 }
 
-TEST_CASE("TestLinkedList_eraseAtIndex") {
+TEST_CASE("StaticLinkedList eraseAtIndex") {
 
     const std::size_t LIST_SIZE = 5;
     StaticLinkedList<int, LIST_SIZE> list{ 99, 7, 88, 5, 77 };
@@ -287,7 +287,7 @@ TEST_CASE("TestLinkedList_eraseAtIndex") {
     }
 }
 
-TEST_CASE("TestLinkedList_iterator") {
+TEST_CASE("StaticLinkedList iterator") {
     StaticLinkedList<int, 3> list0;
     list0.push_back(1);
     list0.push_back(2);
@@ -315,7 +315,7 @@ TEST_CASE("TestLinkedList_iterator") {
     REQUIRE(cEq);
 }
 
-TEST_CASE("TestLinkedList_copyAlgorithm") {
+TEST_CASE("StaticLinkedList copyAlgorithm") {
     int myInts[] = { 1, 2, 3, 4, 5 };
     StaticLinkedList<int, 10> list0;
     std::copy(myInts, myInts + std::size(myInts), std::back_inserter(list0));
@@ -327,7 +327,7 @@ TEST_CASE("TestLinkedList_copyAlgorithm") {
     REQUIRE(same);
 }
 
-TEST_CASE("TestLinkedList_literalConstructor") {
+TEST_CASE("StaticLinkedList literalConstructor") {
     const std::size_t LIST_SIZE = 5;
     StaticLinkedList<int, LIST_SIZE> list0 = { 1, 2, 3, 4, 5 };
 
@@ -339,7 +339,7 @@ TEST_CASE("TestLinkedList_literalConstructor") {
     REQUIRE(same);
 }
 
-TEST_CASE("TestLinkedList_eraseWithIterator") {
+TEST_CASE("StaticLinkedList eraseWithIterator") {
     const std::size_t LIST_SIZE = 10;
     StaticLinkedList<int, LIST_SIZE * 2> list0 = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
@@ -355,7 +355,7 @@ TEST_CASE("TestLinkedList_eraseWithIterator") {
     REQUIRE(list0 == expected);
 }
 
-TEST_CASE("TestLinkedList_mutableListWithIterator") {
+TEST_CASE("StaticLinkedList mutableListWithIterator") {
     const std::size_t LIST_SIZE = 10;
     StaticLinkedList<int, LIST_SIZE * 2> list0 = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
@@ -367,7 +367,7 @@ TEST_CASE("TestLinkedList_mutableListWithIterator") {
     REQUIRE(list0 == expected);
 }
 
-TEST_CASE("TestLinkedList_frontAndBackMutability") {
+TEST_CASE("StaticLinkedList frontAndBackMutability") {
 
     const std::size_t LIST_SIZE = 10;
     StaticLinkedList<int, LIST_SIZE * 2> list0 = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
