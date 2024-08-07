@@ -84,7 +84,7 @@ TEST_CASE("TestLinkedList_copyConstructorOfSameElementTypeDifferentSize") {
     {
         Allocator<Tag, MAX_TAGS-1> allocator1;
         typedef LinkedList<Tag> ListType;
-        REQUIRE_THROWS_AS({ListType list(allocator1, tagList); (void) list; }, std::overflow_error);
+        REQUIRE_THROWS_AS({ListType list(allocator1, tagList); (void) list; }, std::bad_alloc);
     }
 }
 
@@ -127,7 +127,7 @@ TEST_CASE("TestLinkedList_push_back") {
     REQUIRE(list.size() == list.size());
     list.push_back(345);
     REQUIRE(list.size() == list.size());
-    REQUIRE_THROWS_AS(list.push_back(456), std::overflow_error);
+    REQUIRE_THROWS_AS(list.push_back(456), std::bad_alloc);
 }
 
 TEST_CASE("TestLinkedList_pop_back") {
@@ -163,7 +163,7 @@ TEST_CASE("TestLinkedList_push_front") {
     REQUIRE(list.size() == list.size());
     list.push_front(345);
     REQUIRE(list.size() == list.size());
-    REQUIRE_THROWS_AS(list.push_front(456), std::overflow_error);
+    REQUIRE_THROWS_AS(list.push_front(456), std::bad_alloc);
 }
 
 TEST_CASE("TestLinkedList_pop_front") {

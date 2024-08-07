@@ -47,28 +47,59 @@ public:
 private:
     class Allocator: public LinkedList<T>::Allocator {
     public:
+        Allocator(): LinkedList<T>::Allocator() {
+            initNodes();
+        }
+
         typename LinkedList<T>::Node *alloc() override {
-            if(mNumAllocations < NUM_ELEMS) {
-                auto ptr = new typename LinkedList<T>::Node;
-                if(ptr) {
-                    mNumAllocations++;
+            if(mAvailable) {
+                auto ptr = mAvailable;
+                mAvailable = mAvailable->mNext;
+                if(mAvailable) {
+                    mAvailable->mPrev = nullptr;
                 }
+                mNumAllocations++;
                 return ptr;
+            } else {
+                throw std::bad_alloc();
             }
-            return nullptr;
         }
 
         void free(typename LinkedList<T>::Node *ptr) override {
-            delete ptr;
-            mNumAllocations--;
+            if(ptr) {
+                ptr->mNext = mAvailable;
+                ptr->mPrev = nullptr;
+                if(mAvailable) {
+                    mAvailable->mPrev = ptr;
+                }
+                mAvailable = ptr;
+                mNumAllocations--;
+            }
         }
 
         [[nodiscard]] size_t size() const override {
-            return UINT32_MAX;
+            return NUM_ELEMS - mNumAllocations;
         }
 
     private:
         size_t mNumAllocations = 0;
+
+        typename LinkedList<T>::Node mNodes[NUM_ELEMS]{};
+        typename LinkedList<T>::Node *mAvailable{&mNodes[0]};
+
+    private:
+        void initNodes() {
+            mNodes[0].mPrev = nullptr;
+
+            //Now link all the nodes together.
+            for(unsigned int i = 0; i < std::size(mNodes)-1; i++) {
+                mNodes[i].mNext = &mNodes[i+1];
+                mNodes[i].mNext->mPrev = &mNodes[i];
+            }
+            mNodes[NUM_ELEMS-1].mNext = nullptr;
+            mAvailable = &mNodes[0];
+        }
+
     } mStaticAllocator;
 };
 

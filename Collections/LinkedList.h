@@ -177,7 +177,7 @@ public:
         auto newNode = mAllocator.alloc();
 
         if(!newNode) {
-            throw std::overflow_error("Unable to allocate new element.");
+            throw std::bad_alloc();
         }
         newNode->mNext = nullptr;
         newNode->mPrev = nullptr;
@@ -214,7 +214,7 @@ public:
         auto newNode = mAllocator.alloc();
 
         if(!newNode) {
-            throw std::overflow_error("Unable to allocate new element.");
+            throw std::bad_alloc();
         }
         newNode->mNext = nullptr;
         newNode->mPrev = nullptr;
