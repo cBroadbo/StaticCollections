@@ -38,7 +38,7 @@ public:
 
     /**
      * Gets the span that includes the longest contiguous bytes from the front of the queue.  This is useful because
-     * A circular queue, once filled, will have data in two contiguous runs (i.e. from the head of the queue
+     * A circular queue, once filled, will have data in two contiguous runs (i.e. from the mHead of the queue
      * to the end of the physical storage, and then continue from the beginning of the storage to the end of the queue
      *
      * The best use of the this call are to copy the data out of the queue in the in bulk with largest chunks you're
@@ -73,7 +73,7 @@ private:
 
     std::atomic_size_t  mTail;  // tail(input) index
     T                   mArray[SIZE + 1]{};
-    std::atomic_size_t  mHead; // head(output) index
+    std::atomic_size_t  mHead; // mHead(output) index
 };
 
 template<typename T, size_t Size>
@@ -101,7 +101,7 @@ bool CircularQueue<T, SIZE>::push(const T *items, size_t count) {
     return true;
 }
 
-// Pop by Consumer can only update the head
+// Pop by Consumer can only update the mHead
 template<typename T, size_t Size>
 bool CircularQueue<T, Size>::pop(T& item) {
     const auto current_head = mHead.load();
@@ -114,7 +114,7 @@ bool CircularQueue<T, Size>::pop(T& item) {
     return true;
 }
 
-// Pop by Consumer can only update the head
+// Pop by Consumer can only update the mHead
 template<typename T, size_t Size>
 bool CircularQueue<T, Size>::popElements(size_t count) {
     const uint16_t numToPop = std::min(count, size());
@@ -124,7 +124,7 @@ bool CircularQueue<T, Size>::popElements(size_t count) {
     return true;
 }
 
-// Pop by Consumer can only update the head
+// Pop by Consumer can only update the mHead
 template<typename T, size_t Size>
 bool CircularQueue<T, Size>::peek(T& item) {
     const auto current_head = mHead.load();
